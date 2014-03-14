@@ -1,6 +1,7 @@
 package net.nexustools.extrafeaturesprovider.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.apache.http.HttpEntity;
@@ -30,13 +31,17 @@ public class ContentGrabber {
 		this(null, DEFAULT_BUFFER_SIZE);
 	}
 	
-	public String fetch(String request) throws IOException {
-		StringBuffer sb = new StringBuffer();
+	public InputStream getInputStream(String request) throws IOException {
 		HttpGet httpGet = new HttpGet(request);
 		if(userAgent != null)
 			httpGet.setHeader("User-Agent", userAgent);
 		HttpEntity ent = new DefaultHttpClient().execute(httpGet).getEntity();
-		InputStreamReader reader = new InputStreamReader(ent.getContent());
+		return ent.getContent();
+	}
+	
+	public String fetch(String request) throws IOException {
+		StringBuffer sb = new StringBuffer();
+		InputStreamReader reader = new InputStreamReader(getInputStream(request));
 		char[] data = new char[bufferSize];
 		int read = -1;
 		while((read = reader.read(data)) != -1)
