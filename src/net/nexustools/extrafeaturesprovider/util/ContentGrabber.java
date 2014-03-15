@@ -46,6 +46,7 @@ public class ContentGrabber {
 		int read = -1;
 		while((read = reader.read(data)) != -1)
 			sb.append(data, 0, read);
+		reader.close();
 		return sb.toString();
 	}
 }
