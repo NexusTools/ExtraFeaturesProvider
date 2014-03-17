@@ -39,22 +39,22 @@ public abstract class OnSwipeListener implements OnTouchListener {
 	}
 	
 	/** 
-	 * @return True if the event is to be consumed, false if otherwise.
+	 * @return <code>true</code> if the event is to be consumed, <code>false</code> if otherwise.
 	 */
 	public boolean onSwipeRight() {return false;}
 
 	/** 
-	 * @return True if the event is to be consumed, false if otherwise.
+	 * @return <code>true</code> if the event is to be consumed, <code>false</code> if otherwise.
 	 */
 	public boolean onSwipeLeft() {return false;}
 
 	/** 
-	 * @return True if the event is to be consumed, false if otherwise.
+	 * @return <code>true</code> if the event is to be consumed, <code>false</code> if otherwise.
 	 */
 	public boolean onSwipeTop() {return false;}
 
 	/** 
-	 * @return True if the event is to be consumed, false if otherwise.
+	 * @return <code>true</code> if the event is to be consumed, <code>false</code> if otherwise.
 	 */
 	public boolean onSwipeBottom() {return false;}
 
