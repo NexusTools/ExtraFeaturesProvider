@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
@@ -16,6 +17,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ClientConnectionManager;
@@ -24,9 +27,11 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.DefaultRedirectHandler;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.HttpContext;
 
 import android.content.Context;
 
@@ -183,7 +188,15 @@ public class ContentGrabber {
 		schemeRegistry.register(new Scheme("https", socketFactory, 443));
 		
 		ClientConnectionManager connectionManager = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
-		return new DefaultHttpClient(connectionManager, httpParams);
+		DefaultHttpClient httpClient = new DefaultHttpClient(connectionManager, httpParams);
+		httpClient.setRedirectHandler(new DefaultRedirectHandler() {
+		    @Override
+		    public URI getLocationURI(HttpResponse response, HttpContext context) throws ProtocolException {
+		        response.setHeader("Location", response.getFirstHeader("Location").getValue().replace(" ", "%20"));        
+		        return super.getLocationURI(response, context);
+		    }
+		});
+		return httpClient;
 	}
 	
 	/**
@@ -225,7 +238,7 @@ public class ContentGrabber {
 	 * @see java.security.KeyStore
 	 */
 	public InputStream getInputStream(Context context, int keystoreResourceId, String keystorePassword, String request) throws IOException, KeyStoreException {
-		HttpGet httpGet = new HttpGet(request.replaceAll(" ", "%20"));
+		HttpGet httpGet = new HttpGet(request.replace(" ", "%20"));
 		if(userAgent != null)
 			httpGet.setHeader("User-Agent", userAgent);
 		HttpEntity ent = createHttpClient(context, keystoreResourceId, keystorePassword).execute(httpGet).getEntity();
