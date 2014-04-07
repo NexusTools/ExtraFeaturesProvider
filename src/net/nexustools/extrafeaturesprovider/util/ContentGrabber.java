@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
@@ -226,7 +225,7 @@ public class ContentGrabber {
 	 * @see java.security.KeyStore
 	 */
 	public InputStream getInputStream(Context context, int keystoreResourceId, String keystorePassword, String request) throws IOException, KeyStoreException {
-		HttpGet httpGet = new HttpGet(URI.create(request));
+		HttpGet httpGet = new HttpGet(request.replaceAll(" ", "%20"));
 		if(userAgent != null)
 			httpGet.setHeader("User-Agent", userAgent);
 		HttpEntity ent = createHttpClient(context, keystoreResourceId, keystorePassword).execute(httpGet).getEntity();
