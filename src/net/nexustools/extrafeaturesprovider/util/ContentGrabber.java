@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -24,12 +26,14 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 
 import android.content.Context;
 
 public class ContentGrabber {
 	/**
-	 * Potentially highly insecure and not recommended for releases.
+	 * Allowing all certificates is potentially insecure and not recommended for releases.
 	 */
 	public static final int ALLOW_ALL_CERTIFICATES = -2;
 	public static final int DEFAULT_BUFFER_SIZE = 512;
@@ -79,9 +83,9 @@ public class ContentGrabber {
 	}
 	
 	/**
-	 * Creates a HttpClient based off a DefaultHttpClient.
+	 * Creates a {@link org.apache.http.client.HttpClient HttpClient} based off a {@link org.apache.http.impl.client.DefaultHttpClient DefaultHttpClient}.
 	 * 
-	 * @return A rather 'normal' instance of a DefaultHttpClient.
+	 * @return A rather 'normal' instance of a {@link org.apache.http.impl.client.DefaultHttpClient DefaultHttpClient}.
 	 */
 	public HttpClient createHttpClient() {
 		try {
@@ -93,9 +97,9 @@ public class ContentGrabber {
 	}
 	
 	/**
-	 * Creates a insecure version of the HttpClient which will ignore certificates.
+	 * Creates a insecure version of the {@link org.apache.http.client.HttpClient HttpClient} which will ignore certificates.
 	 * 
-	 * @return An insecure version of a DefaultHttpClient
+	 * @return An insecure version of a {@link org.apache.http.impl.client.DefaultHttpClient DefaultHttpClient}.
 	 */
 	public HttpClient createInsecureHttpClient() {
 		try {
@@ -107,7 +111,7 @@ public class ContentGrabber {
 	}
 	
 	/**
-	 * Creates a HttpClient based off a DefaultHttpClient with the ability to load keystores/certificates for Secure HTTP, preventing errors like having "No peer certificate".
+	 * Creates a {@link org.apache.http.client.HttpClient HttpClient} based off a DefaultHttpClient with the ability to load keystores/certificates for Secure HTTP, preventing errors like having "No peer certificate".
 	 * 
 	 * @param context
 	 *            The context required that contains the resource, or null if no context.
@@ -116,12 +120,13 @@ public class ContentGrabber {
 	 *            If the resource id is <code>ALLOW_ALL_CERTIFICATES</code>, it'll provide a fake keystore allowing all certificates.
 	 * @param keystorePassword
 	 *            The password used for the exported keystore aforementioned, or null if no keystore.
-	 * @return A rather 'normal' instance of a DefaultHttpClient.
+	 * @return A rather 'normal' instance of a {@link org.apache.http.impl.client.DefaultHttpClient DefaultHttpClient}.
 	 * @throws KeyStoreException
 	 *             If there's an issue with the keystore.
+	 * @see java.security.KeyStore
 	 */
 	public HttpClient createHttpClient(Context context, int keystoreResourceId, String keystorePassword) throws KeyStoreException {
-		DefaultHttpClient defaultHttpClient = new DefaultHttpClient();
+		HttpParams httpParams = new BasicHttpParams();
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 		
 		schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
@@ -178,18 +183,20 @@ public class ContentGrabber {
 		socketFactory.setHostnameVerifier(keystoreResourceId == ALLOW_ALL_CERTIFICATES ? SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER : SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
 		schemeRegistry.register(new Scheme("https", socketFactory, 443));
 		
-		ClientConnectionManager connectionManager = new ThreadSafeClientConnManager(defaultHttpClient.getParams(), schemeRegistry);
-		return new DefaultHttpClient(connectionManager, defaultHttpClient.getParams());
+		ClientConnectionManager connectionManager = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
+		return new DefaultHttpClient(connectionManager, httpParams);
 	}
 	
 	/**
-	 * Obtain a <code>InputStream</code> from a URL.
+	 * Obtain a {@link java.io.InputStream InputStream} from a URL.
 	 * 
 	 * @param request
 	 *            The URL to request data from.
-	 * @return The InputStream constructed from the <code>request</code>
+	 * @return The {@link java.io.InputStream InputStream} constructed from the <code>request</code>
 	 * @throws IOException
 	 *             If there was an error connecting, or other I/O problems.
+	 * @throws URISyntaxException
+	 *             If there was an issue with encoding the {@code request} URL with the {@link #DEFAULT_CHARSET_NAME} charset.
 	 */
 	public InputStream getInputStream(String request) throws IOException {
 		try {
@@ -201,7 +208,7 @@ public class ContentGrabber {
 	}
 	
 	/**
-	 * Obtain a <code>InputStream</code> from a URL.
+	 * Obtain a {@link java.io.InputStream InputStream} from a URL.
 	 * 
 	 * @param context
 	 *            The context required that contains the resource.
@@ -211,14 +218,15 @@ public class ContentGrabber {
 	 *            The password used for the exported keystore aforementioned.
 	 * @param request
 	 *            The URL to request data from.
-	 * @return The InputStream constructed from the <code>request</code>
+	 * @return The {@link java.io.InputStream InputStream} constructed from the {@code request}
 	 * @throws IOException
 	 *             If there was an error connecting, or other I/O problems.
 	 * @throws KeyStoreException
 	 *             If there's an issue with the keystore.
+	 * @see java.security.KeyStore
 	 */
 	public InputStream getInputStream(Context context, int keystoreResourceId, String keystorePassword, String request) throws IOException, KeyStoreException {
-		HttpGet httpGet = new HttpGet(request);
+		HttpGet httpGet = new HttpGet(URI.create(request));
 		if(userAgent != null)
 			httpGet.setHeader("User-Agent", userAgent);
 		HttpEntity ent = createHttpClient(context, keystoreResourceId, keystorePassword).execute(httpGet).getEntity();
@@ -233,6 +241,8 @@ public class ContentGrabber {
 	 * @return A string with the content fetched.
 	 * @throws IOException
 	 *             If there was an error connecting, or other I/O problems.
+	 * @throws URISyntaxException
+	 *             If there was an issue with encoding the {@code request} URL with the {@link #DEFAULT_CHARSET_NAME} charset.
 	 */
 	public String fetch(String request) throws IOException {
 		try {
@@ -259,6 +269,7 @@ public class ContentGrabber {
 	 *             If there was an error connecting, or other I/O problems.
 	 * @throws KeyStoreException
 	 *             If there's an issue with the keystore.
+	 * @see java.security.KeyStore
 	 */
 	public String fetch(Context context, int keystoreResourceId, String keystorePassword, String request) throws IOException, KeyStoreException {
 		StringBuffer sb = new StringBuffer();
