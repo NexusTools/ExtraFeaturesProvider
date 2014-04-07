@@ -3,8 +3,16 @@ package net.nexustools.extrafeaturesprovider.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
@@ -20,9 +28,15 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import android.content.Context;
 
 public class ContentGrabber {
+	/**
+	 * Potentially highly insecure and not recommended for releases.
+	 */
+	public static final int ALLOW_ALL_CERTIFICATES = -2;
 	public static final int DEFAULT_BUFFER_SIZE = 512;
 	private String userAgent;
 	private int bufferSize;
+	
+	private SSLContext sslContext;
 	
 	/**
 	 * Constructs a ContentGrabber.
@@ -79,14 +93,29 @@ public class ContentGrabber {
 	}
 	
 	/**
+	 * Creates a insecure version of the HttpClient which will ignore certificates.
+	 * 
+	 * @return An insecure version of a DefaultHttpClient
+	 */
+	public HttpClient createInsecureHttpClient() {
+		try {
+			return createHttpClient(null, ALLOW_ALL_CERTIFICATES, null);
+		} catch(KeyStoreException e) {
+			e.printStackTrace();
+		}
+		return null; // -Shouldn't- happen.
+	}
+	
+	/**
 	 * Creates a HttpClient based off a DefaultHttpClient with the ability to load keystores/certificates for Secure HTTP, preventing errors like having "No peer certificate".
 	 * 
 	 * @param context
-	 *            The context required that contains the resource.
+	 *            The context required that contains the resource, or null if no context.
 	 * @param keystoreResourceId
-	 *            the resource id of the generated keystore exported using <a href="http://www.bouncycastle.org/">Bouncy Castle Crypto</a>. Ex: R.raw.myKeystore
+	 *            the resource id of the generated keystore exported using <a href="http://www.bouncycastle.org/">Bouncy Castle Crypto</a>. Ex: <code>R.raw.myKeystore</code>, or -1 if no keystore. <br />
+	 *            If the resource id is <code>ALLOW_ALL_CERTIFICATES</code>, it'll provide a fake keystore allowing all certificates.
 	 * @param keystorePassword
-	 *            The password used for the exported keystore aforementioned.
+	 *            The password used for the exported keystore aforementioned, or null if no keystore.
 	 * @return A rather 'normal' instance of a DefaultHttpClient.
 	 * @throws KeyStoreException
 	 *             If there's an issue with the keystore.
@@ -98,7 +127,7 @@ public class ContentGrabber {
 		schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
 		
 		SSLSocketFactory socketFactory = null;
-		if(context != null && keystoreResourceId != -1) {
+		if(context != null && keystoreResourceId != -1 && keystoreResourceId != ALLOW_ALL_CERTIFICATES) {
 			KeyStore trustedKeyStoreEntries = KeyStore.getInstance("BKS");
 			try {
 				InputStream keyStream = context.getResources().openRawResource(keystoreResourceId);
@@ -111,10 +140,42 @@ public class ContentGrabber {
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
+		} else if(keystoreResourceId == ALLOW_ALL_CERTIFICATES) {
+			if(sslContext == null) {
+				try {
+					sslContext = SSLContext.getInstance("TLS");
+					sslContext.init(null, new TrustManager[] {new X509TrustManager() {
+						public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+						
+						public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {}
+						
+						public X509Certificate[] getAcceptedIssuers() {
+							return null;
+						}
+					}}, null);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+			try {
+				socketFactory = new SSLSocketFactory(null) {
+					@Override
+					public Socket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException, UnknownHostException {
+						return sslContext.getSocketFactory().createSocket(socket, host, port, autoClose);
+					}
+					
+					@Override
+					public Socket createSocket() throws IOException {
+						return sslContext.getSocketFactory().createSocket();
+					}
+				};
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
 		} else
 			socketFactory = SSLSocketFactory.getSocketFactory();
 		
-		socketFactory.setHostnameVerifier(SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+		socketFactory.setHostnameVerifier(keystoreResourceId == ALLOW_ALL_CERTIFICATES ? SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER : SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
 		schemeRegistry.register(new Scheme("https", socketFactory, 443));
 		
 		ClientConnectionManager connectionManager = new ThreadSafeClientConnManager(defaultHttpClient.getParams(), schemeRegistry);
