@@ -14,6 +14,7 @@ public class MiscMath {
 		uneven |= uneven >> 4;
 		uneven |= uneven >> 8;
 		uneven |= uneven >> 16;
-		return uneven++;
+		uneven++;
+		return uneven;
 	}
 }
