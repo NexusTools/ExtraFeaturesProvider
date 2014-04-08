@@ -2,9 +2,10 @@ package net.nexustools.extrafeaturesprovider.util;
 
 public class MiscMath {
 	/**
-	 * Returns a even number.
-	 * Thanks to: http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-	 * @param uneven The uneven number.
+	 * Returns a even number. Thanks to: http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+	 * 
+	 * @param uneven
+	 *            The uneven number.
 	 * @return The even number of <code>uneven</code>.
 	 */
 	public static int getNearestPowerOfTwo(int uneven) {

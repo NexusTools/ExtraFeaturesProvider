@@ -8,6 +8,7 @@ public abstract class OnPinchListener implements OnTouchListener {
 	enum State {
 		NONE, DRAG, PINCH
 	}
+	
 	public float lastX;
 	public float lastY;
 	
@@ -47,7 +48,7 @@ public abstract class OnPinchListener implements OnTouchListener {
 					case PINCH:
 						float nDeltaX = event.getX(1) - lastX;
 						float nDeltaY = event.getY(1) - lastY;
-
+						
 						lastX = event.getX(1);
 						lastY = event.getY(1);
 						return onPinchEvent(nDeltaX, nDeltaY);

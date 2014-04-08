@@ -19,19 +19,19 @@ public class ShadowImageView extends ImageView {
 	private int shadowColor = ALPHA_BLACK;
 	
 	public ShadowImageView(Context context) {
-	    super(context);
-	    initPainter();
-    }
+		super(context);
+		initPainter();
+	}
 	
 	public ShadowImageView(Context context, AttributeSet attrs) {
-	    super(context, attrs);
-	    initPainter();
-    }
+		super(context, attrs);
+		initPainter();
+	}
 	
 	public ShadowImageView(Context context, AttributeSet attrs, int defStyle) {
-	    super(context, attrs, defStyle);
-	    initPainter();
-    }
+		super(context, attrs, defStyle);
+		initPainter();
+	}
 	
 	public void initPainter() {
 		shadowRectangle = new Rect();
@@ -41,8 +41,7 @@ public class ShadowImageView extends ImageView {
 		shadowAdditionPainter.setShadowLayer(getShadowRadius(), getShadowRadiusOffX(), getShadowRadiusOffY(), getShadowColor());
 	}
 	
-	
-    @Override
+	@Override
 	public void onDraw(Canvas canvas) {
 		if(getDrawable() != null) {
 			shadowRectangle.set(0, 0, getWidth() - 1, getHeight() - 1);
@@ -50,44 +49,44 @@ public class ShadowImageView extends ImageView {
 		}
 		super.onDraw(canvas);
 	}
-
+	
 	public float getShadowRadius() {
-	    return shadowRadius;
-    }
-
+		return shadowRadius;
+	}
+	
 	public void setShadowRadius(float shadowRadius) {
-	    this.shadowRadius = shadowRadius;
+		this.shadowRadius = shadowRadius;
 		shadowAdditionPainter.setShadowLayer(getShadowRadius(), getShadowRadiusOffX(), getShadowRadiusOffY(), getShadowColor());
 		invalidate();
-    }
-
+	}
+	
 	public float getShadowRadiusOffX() {
-	    return shadowRadiusOffX;
-    }
-
+		return shadowRadiusOffX;
+	}
+	
 	public void setShadowRadiusOffX(float shadowRadiusOffX) {
-	    this.shadowRadiusOffX = shadowRadiusOffX;
+		this.shadowRadiusOffX = shadowRadiusOffX;
 		shadowAdditionPainter.setShadowLayer(getShadowRadius(), getShadowRadiusOffX(), getShadowRadiusOffY(), getShadowColor());
 		invalidate();
-    }
-
+	}
+	
 	public float getShadowRadiusOffY() {
-	    return shadowRadiusOffY;
-    }
-
+		return shadowRadiusOffY;
+	}
+	
 	public void setShadowRadiusOffY(float shadowRadiusOffY) {
-	    this.shadowRadiusOffY = shadowRadiusOffY;
+		this.shadowRadiusOffY = shadowRadiusOffY;
 		shadowAdditionPainter.setShadowLayer(getShadowRadius(), getShadowRadiusOffX(), getShadowRadiusOffY(), getShadowColor());
 		invalidate();
-    }
-
+	}
+	
 	public int getShadowColor() {
-	    return shadowColor;
-    }
-
+		return shadowColor;
+	}
+	
 	public void setShadowColor(int shadowColor) {
-	    this.shadowColor = shadowColor;
+		this.shadowColor = shadowColor;
 		shadowAdditionPainter.setShadowLayer(getShadowRadius(), getShadowRadiusOffX(), getShadowRadiusOffY(), getShadowColor());
 		invalidate();
-    }
+	}
 }
