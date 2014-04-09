@@ -267,6 +267,23 @@ public class ContentGrabber {
 		}
 		return null; // -Shouldn't- happen.
 	}
+
+	/**
+	 * Reads and returns all data from the stream.
+	 * @param stream The stream to read and return data from.
+	 * @return The data from the stream.
+	 * @throws IOException If there was an error connecting, or other I/O problems.
+	 */
+	public String read(InputStream stream) throws IOException {
+		StringBuffer sb = new StringBuffer();
+		InputStreamReader reader = new InputStreamReader(stream);
+		char[] data = new char[bufferSize];
+		int read = -1;
+		while((read = reader.read(data)) != -1)
+			sb.append(data, 0, read);
+		reader.close();
+		return sb.toString();
+	}
 	
 	/**
 	 * Obtain all data from a URL.
@@ -287,13 +304,6 @@ public class ContentGrabber {
 	 * @see java.security.KeyStore
 	 */
 	public String fetch(Context context, int keystoreResourceId, String keystorePassword, String request) throws IOException, KeyStoreException {
-		StringBuffer sb = new StringBuffer();
-		InputStreamReader reader = new InputStreamReader(getInputStream(context, keystoreResourceId, keystorePassword, request));
-		char[] data = new char[bufferSize];
-		int read = -1;
-		while((read = reader.read(data)) != -1)
-			sb.append(data, 0, read);
-		reader.close();
-		return sb.toString();
+		return read(getInputStream(context, keystoreResourceId, keystorePassword, request));
 	}
 }
