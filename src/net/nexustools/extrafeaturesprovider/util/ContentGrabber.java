@@ -19,14 +19,12 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultRedirectHandler;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
@@ -43,6 +41,7 @@ public class ContentGrabber {
 	public static final int DEFAULT_BUFFER_SIZE = 512;
 	private String userAgent;
 	private int bufferSize;
+	private CookieJar cookieJar;
 	
 	private SSLContext sslContext;
 	
@@ -50,13 +49,40 @@ public class ContentGrabber {
 	 * Constructs a ContentGrabber.
 	 * 
 	 * @param bufferSize
+	 *            The optional buffer size to use while grabbing any content.
+	 * @param userAgent
+	 *            The optional user-agent to provide while grabbing any content.
+	 * @param cookieJar
+	 *            The optional cookie jar instance used to send/receive cookies.
+	 * @see #ContentGrabber()
+	 * @see #ContentGrabber(int)
+	 * @see #ContentGrabber(String)
+	 * @see #ContentGrabber(int, CookieJar)
+	 * @see #ContentGrabber(String, CookieJar)
+	 * @see #ContentGrabber(String, int)
+	 */
+	public ContentGrabber(String userAgent, int bufferSize, CookieJar cookieJar) {
+		this.userAgent = userAgent;
+		this.bufferSize = bufferSize;
+		this.cookieJar = cookieJar;
+	}
+
+	/**
+	 * Constructs a ContentGrabber.
+	 * 
+	 * @param bufferSize
 	 *            The buffer size to use while grabbing any content.
 	 * @param userAgent
 	 *            The user-agent to provide while grabbing any content.
+	 * @see #ContentGrabber()
+	 * @see #ContentGrabber(int)
+	 * @see #ContentGrabber(String)
+	 * @see #ContentGrabber(int, CookieJar)
+	 * @see #ContentGrabber(String, CookieJar)
+	 * @see #ContentGrabber(String, int, CookieJar)
 	 */
 	public ContentGrabber(String userAgent, int bufferSize) {
-		this.userAgent = userAgent;
-		this.bufferSize = bufferSize;
+		this(userAgent, bufferSize, null);
 	}
 	
 	/**
@@ -64,9 +90,34 @@ public class ContentGrabber {
 	 * 
 	 * @param userAgent
 	 *            The user-agent to provide while grabbing any content.
+	 * @see #ContentGrabber()
+	 * @see #ContentGrabber(int)
+	 * @see #ContentGrabber(int, CookieJar)
+	 * @see #ContentGrabber(String, CookieJar)
+	 * @see #ContentGrabber(String, int)
+	 * @see #ContentGrabber(String, int, CookieJar)
 	 */
 	public ContentGrabber(String userAgent) {
-		this(userAgent, DEFAULT_BUFFER_SIZE);
+		this(userAgent, DEFAULT_BUFFER_SIZE, null);
+	}
+
+	
+	/**
+	 * Constructs a ContentGrabber.
+	 * 
+	 * @param userAgent
+	 *            The user-agent to provide while grabbing any content.
+	 * @param cookieJar
+	 *            The cookie jar instance used to send/receive cookies.
+	 * @see #ContentGrabber()
+	 * @see #ContentGrabber(int)
+	 * @see #ContentGrabber(String)
+	 * @see #ContentGrabber(int, CookieJar)
+	 * @see #ContentGrabber(String, int)
+	 * @see #ContentGrabber(String, int, CookieJar)
+	 */
+	public ContentGrabber(String userAgent, CookieJar cookieJar) {
+		this(userAgent, DEFAULT_BUFFER_SIZE, cookieJar);
 	}
 	
 	/**
@@ -74,16 +125,46 @@ public class ContentGrabber {
 	 * 
 	 * @param bufferSize
 	 *            The buffer size to use while grabbing any content.
+	 * @see #ContentGrabber()
+	 * @see #ContentGrabber(String)
+	 * @see #ContentGrabber(int, CookieJar)
+	 * @see #ContentGrabber(String, CookieJar)
+	 * @see #ContentGrabber(String, int)
+	 * @see #ContentGrabber(String, int, CookieJar)
 	 */
 	public ContentGrabber(int bufferSize) {
-		this(null, bufferSize);
+		this(null, bufferSize, null);
+	}
+	
+	/**
+	 * Constructs a ContentGrabber.
+	 * 
+	 * @param bufferSize
+	 *            The buffer size to use while grabbing any content.
+	 * @param cookieJar
+	 *            The cookie jar instance used to send/receive cookies.
+	 * @see #ContentGrabber()
+	 * @see #ContentGrabber(int)
+	 * @see #ContentGrabber(String)
+	 * @see #ContentGrabber(String, CookieJar)
+	 * @see #ContentGrabber(String, int)
+	 * @see #ContentGrabber(String, int, CookieJar)
+	 */
+	public ContentGrabber(int bufferSize, CookieJar cookieJar) {
+		this(null, bufferSize, cookieJar);
 	}
 	
 	/**
 	 * Constructs a default ContentGrabber.
+	 * @see #ContentGrabber(int)
+	 * @see #ContentGrabber(String)
+	 * @see #ContentGrabber(int, CookieJar)
+	 * @see #ContentGrabber(String, CookieJar)
+	 * @see #ContentGrabber(String, int)
+	 * @see #ContentGrabber(String, int, CookieJar)
 	 */
 	public ContentGrabber() {
-		this(null, DEFAULT_BUFFER_SIZE);
+		this(null, DEFAULT_BUFFER_SIZE, null);
 	}
 	
 	/**
@@ -91,7 +172,7 @@ public class ContentGrabber {
 	 * 
 	 * @return A rather 'normal' instance of a {@link org.apache.http.impl.client.DefaultHttpClient DefaultHttpClient}.
 	 */
-	public HttpClient createHttpClient() {
+	public HttpCookieClient createHttpClient() {
 		try {
 			return createHttpClient(null, -1, null);
 		} catch(KeyStoreException e) {
@@ -105,7 +186,7 @@ public class ContentGrabber {
 	 * 
 	 * @return An insecure version of a {@link org.apache.http.impl.client.DefaultHttpClient DefaultHttpClient}.
 	 */
-	public HttpClient createInsecureHttpClient() {
+	public HttpCookieClient createInsecureHttpClient() {
 		try {
 			return createHttpClient(null, ALLOW_ALL_CERTIFICATES, null);
 		} catch(KeyStoreException e) {
@@ -129,7 +210,7 @@ public class ContentGrabber {
 	 *             If there's an issue with the keystore.
 	 * @see java.security.KeyStore
 	 */
-	public HttpClient createHttpClient(Context context, int keystoreResourceId, String keystorePassword) throws KeyStoreException {
+	public HttpCookieClient createHttpClient(Context context, int keystoreResourceId, String keystorePassword) throws KeyStoreException {
 		HttpParams httpParams = new BasicHttpParams();
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 		
@@ -191,8 +272,9 @@ public class ContentGrabber {
 		schemeRegistry.register(new Scheme("https", socketFactory, 443));
 		
 		ClientConnectionManager connectionManager = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
-		DefaultHttpClient httpClient = new DefaultHttpClient(connectionManager, httpParams);
-		httpClient.setRedirectHandler(new DefaultRedirectHandler() {
+		System.out.println("Cookie Jar: " + cookieJar);
+		HttpCookieClient httpClient = new HttpCookieClient(connectionManager, httpParams, cookieJar);
+		httpClient.getClient().setRedirectHandler(new DefaultRedirectHandler() {
 			@Override
 			public URI getLocationURI(HttpResponse response, HttpContext context) throws ProtocolException {
 				response.setHeader("Location", response.getFirstHeader("Location").getValue().replace(" ", "%20"));
