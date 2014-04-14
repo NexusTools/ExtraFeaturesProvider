@@ -12,8 +12,12 @@ public abstract class OnSwipeListener implements OnTouchListener {
 	private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 	
 	private GestureDetector gestureDetector = null;
-	
+
 	public OnSwipeListener(Context context) {
+		this(context, SWIPE_DISTANCE_THRESHOLD, SWIPE_VELOCITY_THRESHOLD);
+	}
+	
+	public OnSwipeListener(Context context, final int distanceThreshold, final int velocityThreshold) {
 		gestureDetector = new GestureDetector(context, new SimpleOnGestureListener() {
 			@Override
 			public boolean onDown(MotionEvent e) {
@@ -25,11 +29,11 @@ public abstract class OnSwipeListener implements OnTouchListener {
 				float deltaX = secondEvent.getX() - firstEvent.getX();
 				float deltaY = secondEvent.getY() - firstEvent.getY();
 				if(Math.abs(deltaX) > Math.abs(deltaY)) {
-					if(Math.abs(deltaX) > SWIPE_DISTANCE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+					if(Math.abs(deltaX) > distanceThreshold && Math.abs(velocityX) > velocityThreshold) {
 						return deltaX > 0 ? onSwipeRight() : onSwipeLeft();
 					}
 				} else {
-					if(Math.abs(deltaY) > SWIPE_DISTANCE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+					if(Math.abs(deltaY) > distanceThreshold && Math.abs(velocityY) > velocityThreshold) {
 						return deltaY > 0 ? onSwipeBottom() : onSwipeTop();
 					}
 				}
