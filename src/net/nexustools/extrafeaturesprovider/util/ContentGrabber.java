@@ -351,7 +351,7 @@ public class ContentGrabber {
 	}
 
 	/**
-	 * Reads and returns all data from the stream.
+	 * Reads and returns all data from the stream. Closes <code>stream</code> when complete.
 	 * @param stream The stream to read and return data from.
 	 * @return The data from the stream.
 	 * @throws IOException If there was an error connecting, or other I/O problems.
@@ -364,6 +364,7 @@ public class ContentGrabber {
 		while((read = reader.read(data)) != -1)
 			sb.append(data, 0, read);
 		reader.close();
+		stream.close();
 		return sb.toString();
 	}
 	
