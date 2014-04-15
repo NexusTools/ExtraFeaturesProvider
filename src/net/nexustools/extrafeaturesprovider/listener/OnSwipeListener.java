@@ -11,6 +11,8 @@ public abstract class OnSwipeListener implements OnTouchListener {
 	private static final int SWIPE_DISTANCE_THRESHOLD = 75;
 	private static final int SWIPE_VELOCITY_THRESHOLD = 100;
 	
+	private boolean anotherPointer = false;
+	
 	private GestureDetector gestureDetector = null;
 
 	public OnSwipeListener(Context context) {
@@ -72,9 +74,21 @@ public abstract class OnSwipeListener implements OnTouchListener {
 	
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-		if(gestureDetector != null)
-			return gestureDetector.onTouchEvent(event);
-		else
+		if(gestureDetector == null)
 			return false;
+		int eventAction = event.getAction();
+		switch(eventAction) {
+			case MotionEvent.ACTION_POINTER_DOWN:
+				anotherPointer = true;
+				break;
+			case MotionEvent.ACTION_POINTER_UP:
+				anotherPointer = false;
+				break;
+			case MotionEvent.ACTION_DOWN:
+			case MotionEvent.ACTION_MOVE:
+			case MotionEvent.ACTION_UP:
+				return anotherPointer ? false : gestureDetector.onTouchEvent(event);
+		}
+		return false;
 	}
 }
