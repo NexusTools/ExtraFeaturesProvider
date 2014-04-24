@@ -52,8 +52,12 @@ public class HttpCookieClient {
 				System.out.println("cookieHeader " + cookieHeader.getValue());
 				Matcher cookiePairMatcher = COOKIE_PAIR_PATTERN.matcher(cookieHeader.getValue());
 				if(cookiePairMatcher.find()) {
-					System.out.println("Adding cookie id: " + cookiePairMatcher.group(1) + " to: " + cookiePairMatcher.group(2));
-					cookieJar.set(cookiePairMatcher.group(1), cookiePairMatcher.group(2));
+					String cookieValue = cookiePairMatcher.group(2);
+					System.out.println("Adding cookie id: " + cookiePairMatcher.group(1) + " to: " + cookieValue);
+					if(cookieValue.equals("deleted"))
+						cookieJar.remove(cookieValue);
+					else
+						cookieJar.set(cookiePairMatcher.group(1), cookieValue);
 				} else {
 					System.err.println("No cookie found!");
 				}

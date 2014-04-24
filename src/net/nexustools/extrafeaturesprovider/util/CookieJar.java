@@ -69,6 +69,15 @@ public class CookieJar {
 		return cookies.get(key);
 	}
 	
+	public void remove(String key) {
+		synchronized(cookies) {
+			if(cookies.containsKey(key)) {
+				cookies.remove(key);
+				cookieString = null;
+			}
+		}
+	}
+	
 	protected void destroyCookiePreferences() {
 		synchronized(cookies) {
 			if(storagePreferences == null)
