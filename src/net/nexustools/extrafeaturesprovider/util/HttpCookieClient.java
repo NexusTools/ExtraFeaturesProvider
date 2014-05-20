@@ -50,6 +50,9 @@ public class HttpCookieClient {
 			if(cookie != null)
 				request.setHeader("Cookie", cookie);
 		}
+		if(userAgent != null) {
+			request.setHeader("User-Agent", userAgent);
+		}
 		return request;
 	}
 	
