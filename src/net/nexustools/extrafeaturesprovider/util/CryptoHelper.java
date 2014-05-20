@@ -9,7 +9,7 @@ public class CryptoHelper {
 	public static String MD5(String message) {
 		try {
 			MessageDigest messageDigester = MessageDigest.getInstance("MD5");
-			byte[] digested = messageDigester.digest(message.getBytes());
+			byte[] digested = messageDigester.digest(String.valueOf(message).getBytes());
 			
 			StringBuffer stringBuffer = new StringBuffer();
 			for(int i = 0; i < digested.length; i++)
