@@ -18,8 +18,9 @@ import org.apache.http.protocol.HttpContext;
 public class HttpCookieClient {
 	private static final Pattern COOKIE_PAIR_PATTERN = Pattern.compile("^([^=]+)=([^;]+);");
 	
-	private CookieJar cookieJar;
-	private DefaultHttpClient httpClient;
+	private CookieJar cookieJar = null;
+	private DefaultHttpClient httpClient = null;
+	private String userAgent = null;
 	
 	public HttpCookieClient(ClientConnectionManager httpManager, HttpParams httpParams, CookieJar jar) {
 		httpClient = new DefaultHttpClient(httpManager, httpParams);
@@ -33,6 +34,14 @@ public class HttpCookieClient {
 	public CookieJar getCookieJar() {
 		return cookieJar;
 	}
+	
+	public String getUserAgent() {
+	    return userAgent;
+    }
+
+	public void setUserAgent(String userAgent) {
+	    this.userAgent = userAgent;
+    }
 	
 	protected HttpRequest preProcessRequest(HttpRequest request) {
 		if(cookieJar != null) {

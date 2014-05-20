@@ -274,6 +274,7 @@ public class ContentGrabber {
 		ClientConnectionManager connectionManager = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
 		System.out.println("Cookie Jar: " + cookieJar);
 		HttpCookieClient httpClient = new HttpCookieClient(connectionManager, httpParams, cookieJar);
+		httpClient.setUserAgent(userAgent);
 		httpClient.getClient().setRedirectHandler(new DefaultRedirectHandler() {
 			@Override
 			public URI getLocationURI(HttpResponse response, HttpContext context) throws ProtocolException {
