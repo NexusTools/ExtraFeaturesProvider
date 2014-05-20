@@ -389,4 +389,12 @@ public class ContentGrabber {
 	public String fetch(Context context, int keystoreResourceId, String keystorePassword, String request) throws IOException, KeyStoreException {
 		return read(getInputStream(context, keystoreResourceId, keystorePassword, request));
 	}
+
+	public String getUserAgent() {
+		return userAgent;
+	}
+
+	public void setUserAgent(String userAgent) {
+		this.userAgent = userAgent;
+	}
 }
