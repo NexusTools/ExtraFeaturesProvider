@@ -42,6 +42,7 @@ public class ContentGrabber {
 	private String userAgent;
 	private int bufferSize;
 	private CookieJar cookieJar;
+	private String encodedCredentials;
 	
 	private SSLContext sslContext;
 	
@@ -275,6 +276,7 @@ public class ContentGrabber {
 		System.out.println("Cookie Jar: " + cookieJar);
 		HttpCookieClient httpClient = new HttpCookieClient(connectionManager, httpParams, cookieJar);
 		httpClient.setUserAgent(userAgent);
+		httpClient.setEncodedCredentials(encodedCredentials);
 		httpClient.getClient().setRedirectHandler(new DefaultRedirectHandler() {
 			@Override
 			public URI getLocationURI(HttpResponse response, HttpContext context) throws ProtocolException {
@@ -398,4 +400,12 @@ public class ContentGrabber {
 	public void setUserAgent(String userAgent) {
 		this.userAgent = userAgent;
 	}
+	
+	public String getEncodedCredentials() {
+	    return encodedCredentials;
+    }
+
+	public void setEncodedCredentials(String encodedCredentials) {
+	    this.encodedCredentials = encodedCredentials;
+    }
 }

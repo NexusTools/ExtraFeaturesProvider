@@ -21,6 +21,7 @@ public class HttpCookieClient {
 	private CookieJar cookieJar = null;
 	private DefaultHttpClient httpClient = null;
 	private String userAgent = null;
+	private String encodedCredentials;
 	
 	public HttpCookieClient(ClientConnectionManager httpManager, HttpParams httpParams, CookieJar jar) {
 		httpClient = new DefaultHttpClient(httpManager, httpParams);
@@ -43,6 +44,14 @@ public class HttpCookieClient {
 	    this.userAgent = userAgent;
     }
 	
+	public String getEncodedCredentials() {
+	    return encodedCredentials;
+    }
+
+	public void setEncodedCredentials(String encodedCredentials) {
+	    this.encodedCredentials = encodedCredentials;
+    }
+
 	protected HttpRequest preProcessRequest(HttpRequest request) {
 		if(cookieJar != null) {
 			String cookie = cookieJar.getCookieString();
@@ -52,6 +61,10 @@ public class HttpCookieClient {
 		}
 		if(userAgent != null) {
 			request.setHeader("User-Agent", userAgent);
+		}
+		
+		if(encodedCredentials != null) {
+			request.setHeader("Authorization", encodedCredentials);
 		}
 		return request;
 	}
