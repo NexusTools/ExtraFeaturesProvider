@@ -28,6 +28,7 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultRedirectHandler;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 
@@ -37,10 +38,13 @@ public class ContentGrabber {
 	/**
 	 * Allowing all certificates is potentially insecure and not recommended for releases.
 	 */
+	public static final int NO_TIMEOUT_SET = -1;
 	public static final int ALLOW_ALL_CERTIFICATES = -2;
 	public static final int DEFAULT_BUFFER_SIZE = 512;
 	private String userAgent;
 	private int bufferSize;
+	private int connectionTimeout = NO_TIMEOUT_SET;
+	private int socketTimeout = NO_TIMEOUT_SET;
 	private CookieJar cookieJar;
 	private String encodedCredentials;
 	
@@ -213,6 +217,11 @@ public class ContentGrabber {
 	 */
 	public HttpCookieClient createHttpClient(Context context, int keystoreResourceId, String keystorePassword) throws KeyStoreException {
 		HttpParams httpParams = new BasicHttpParams();
+		if(connectionTimeout != NO_TIMEOUT_SET)
+			HttpConnectionParams.setConnectionTimeout(httpParams, connectionTimeout);
+		if(socketTimeout != NO_TIMEOUT_SET)
+			HttpConnectionParams.setSoTimeout(httpParams, socketTimeout);
+		
 		SchemeRegistry schemeRegistry = new SchemeRegistry();
 		
 		schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
@@ -401,6 +410,22 @@ public class ContentGrabber {
 		this.userAgent = userAgent;
 	}
 	
+	public int getConnectionTimeout() {
+		return connectionTimeout;
+	}
+
+	public void setConnectionTimeout(int connectionTimeout) {
+		this.connectionTimeout = connectionTimeout;
+	}
+	
+	public int getSocketTimeout() {
+		return socketTimeout;
+	}
+
+	public void setSocketTimeout(int socketTimeout) {
+		this.socketTimeout = socketTimeout;
+	}
+
 	public String getEncodedCredentials() {
 	    return encodedCredentials;
     }
